@@ -1,6 +1,8 @@
 package com.sjf.infiniteparking
 
 import android.Manifest.permission.SEND_SMS
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.net.Uri
@@ -19,6 +21,8 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     var timerCurrent: CountDownTimer? = null
+    private lateinit var _sms: SmsManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val request = registerForActivityResult(ActivityResultContracts.RequestPermission(), fun(isGranted) {
@@ -36,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         val start = findViewById<Button>(R.id.Start)
         val stop = findViewById<Button>(R.id.Stop)
         var timerTotal: CountDownTimer? = null
-        val sms = SmsManager.getDefault()
+        sms = SmsManager.getDefault()
 
         minutesPicker.setFormatter(fun(value: Int):String {
             return String.format("%02d", value)
@@ -88,6 +92,9 @@ class MainActivity : AppCompatActivity() {
         }
         redrawTime(0, total)
         redrawTime(0, current)
+        var receiver = new BroadcastReceiver(){
+
+        }
     }
 
     fun redrawTime(millisUntilFinished: Long, textView: TextView) {
@@ -103,5 +110,20 @@ class MainActivity : AppCompatActivity() {
                 sms.sendTextMessage("+436646600990", null, "15", null, null)
             }
         }.start()
+    }
+
+    fun sendMessage(){
+        sms.sendTextMessage("+436646600990", null, "15", null, null)
+    }
+
+    fun startAlarm(){
+
+    }
+
+    inner class MyAlarm() : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            sendMessage()
+            startAlarm()
+        }
     }
 }

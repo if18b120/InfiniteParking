@@ -1,6 +1,8 @@
 package com.sjf.infiniteparking
 
 import android.Manifest.permission.SEND_SMS
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -17,12 +19,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import java.util.*
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     var timerCurrent: CountDownTimer? = null
-    private lateinit var _sms: SmsManager
+    private val sms = SmsManager.getDefault()
+    private lateinit var total: TextView
 
+    private var count: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val request = registerForActivityResult(ActivityResultContracts.RequestPermission(), fun(isGranted) {
@@ -35,12 +40,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val minutesPicker = findViewById<NumberPicker>(R.id.Minutes)
         val hoursPicker = findViewById<NumberPicker>(R.id.Hours)
-        val total = findViewById<TextView>(R.id.TimeTotal)
+        total = findViewById<TextView>(R.id.TimeTotal)
         val current = findViewById<TextView>(R.id.TimeCurrent)
         val start = findViewById<Button>(R.id.Start)
         val stop = findViewById<Button>(R.id.Stop)
         var timerTotal: CountDownTimer? = null
-        sms = SmsManager.getDefault()
+//        sms = SmsManager.getDefault()
 
         minutesPicker.setFormatter(fun(value: Int):String {
             return String.format("%02d", value)
@@ -55,61 +60,13 @@ class MainActivity : AppCompatActivity() {
         hoursPicker.minValue = 0
 
         start.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, SEND_SMS) == PERMISSION_DENIED) {
-                request.launch(SEND_SMS)
-            } else {
-                val time = (hoursPicker.value * 3600000 + minutesPicker.value * 60000).toLong()
-                if (timerTotal !== null) {
-                    timerTotal!!.cancel()
-                }
-                timerTotal = object: CountDownTimer(time, 1000){
-                    override fun onTick(millisUntilFinished: Long) {
-                        redrawTime(millisUntilFinished, total)
-                    }
-                    override fun onFinish() {
-                        if (timerCurrent !== null) {
-                            timerCurrent!!.cancel()
-                        }
-                    }
-                }.start()
-                if (timerCurrent !== null) {
-                    timerCurrent!!.cancel()
-                }
-                startRecursiveCurrentTimer(1020000, 1000, current, sms)
-                sms.sendTextMessage("+436646600990", null, "15", null, null)
-                redrawTime(time, total)
-            }
+            startAlarm()
         }
-        stop.setOnClickListener {
-            if (timerTotal !== null) {
-                timerTotal!!.cancel()
-                redrawTime(0, total)
-                redrawTime(0, current)
-            }
-            if (timerCurrent !== null) {
-                timerCurrent!!.cancel()
-            }
-        }
-        redrawTime(0, total)
-        redrawTime(0, current)
-        var receiver = new BroadcastReceiver(){
 
-        }
     }
 
     fun redrawTime(millisUntilFinished: Long, textView: TextView) {
         textView.text = String.format("%02d:%02d:%02d", millisUntilFinished / 3600000 % 24, millisUntilFinished / 60000 % 60, millisUntilFinished / 1000 % 60)
-    }
-    fun startRecursiveCurrentTimer(millisInFuture: Long, countDownInterval: Long, textView: TextView, sms: SmsManager) {
-        timerCurrent = object: CountDownTimer(millisInFuture + Random.nextLong(30000, 60000), countDownInterval){
-            override fun onTick(millisUntilFinished: Long) {
-                redrawTime(millisUntilFinished, textView)
-            }
-            override fun onFinish() {
-                startRecursiveCurrentTimer(millisInFuture, countDownInterval, textView, sms)
-                sms.sendTextMessage("+436646600990", null, "15", null, null)
-            }
-        }.start()
     }
 
     fun sendMessage(){
@@ -117,12 +74,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startAlarm(){
+        count++
+        redrawTime(count * 1000, total)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+        val calendar: Calendar = Calendar.getInstance()
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 17, 0)
+
+        val intent = Intent(this, MyAlarm::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
     }
 
     inner class MyAlarm() : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            sendMessage()
+//            sendMessage()
             startAlarm()
         }
     }

@@ -3,6 +3,7 @@ package com.sjf.infiniteparking
 import android.Manifest.permission.SEND_SMS
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.Settings
 import android.telephony.SmsManager
+import android.util.Log
 import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
@@ -79,17 +81,18 @@ class MainActivity : AppCompatActivity() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val calendar: Calendar = Calendar.getInstance()
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 17, 0)
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 1, 0)
 
         val intent = Intent(this, MyAlarm::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
+        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, pendingIntent)
     }
 
     inner class MyAlarm() : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
 //            sendMessage()
-            startAlarm()
+            Log.d("Alarm Bell", "Alarm just fired")
+//            startAlarm()
         }
     }
 }

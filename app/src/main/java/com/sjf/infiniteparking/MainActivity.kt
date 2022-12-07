@@ -1,32 +1,26 @@
 package com.sjf.infiniteparking
 
-import android.Manifest.permission.SEND_SMS
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.Settings
-import android.telephony.SmsManager
 import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import java.util.*
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     var timerCurrent: CountDownTimer? = null
-    private val sms = SmsManager.getDefault()
     private lateinit var total: TextView
-
+    var bra = this.applicationContext
     private var count: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,13 +63,7 @@ class MainActivity : AppCompatActivity() {
         textView.text = String.format("%02d:%02d:%02d", millisUntilFinished / 3600000 % 24, millisUntilFinished / 60000 % 60, millisUntilFinished / 1000 % 60)
     }
 
-    fun sendMessage(){
-        sms.sendTextMessage("+436646600990", null, "15", null, null)
-    }
-
     fun startAlarm(){
-        count++
-        redrawTime(count * 1000, total)
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val calendar: Calendar = Calendar.getInstance()
@@ -88,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     inner class MyAlarm() : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-//            sendMessage()
+
             startAlarm()
         }
     }

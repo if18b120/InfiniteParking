@@ -64,20 +64,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startAlarm(){
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 17, 0)
-
-        val intent = Intent(this, MyAlarm::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-    }
-
-    inner class MyAlarm() : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-
-            startAlarm()
-        }
     }
 }

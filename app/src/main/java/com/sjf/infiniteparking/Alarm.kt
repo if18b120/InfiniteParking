@@ -9,16 +9,13 @@ import java.util.*
 
 class Alarm : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
+        val calendar = Calendar.getInstance()
 
     }
-    fun startAlarm(context: Context) {
+    fun startAlarm(context: Context, time: Long, intent: Intent?) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 17, 0)
-
-//        val intent = Intent(this, MyAlarm::class.java)
-//        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+        val newIntent = intent ?: Intent(context, Alarm::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, newIntent, PendingIntent.FLAG_IMMUTABLE)
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent)
     }
 }

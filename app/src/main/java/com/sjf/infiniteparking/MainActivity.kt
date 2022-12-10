@@ -1,27 +1,24 @@
+/* Data to be saved in shared preference
+*   last alarm set
+*   target time
+* */
+
 package com.sjf.infiniteparking
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.provider.Settings
 import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import java.util.*
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
-    var timerCurrent: CountDownTimer? = null
-    private lateinit var total: TextView
-    var bra = this.applicationContext
-    private var count: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val request = registerForActivityResult(ActivityResultContracts.RequestPermission(), fun(isGranted) {
@@ -34,11 +31,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val minutesPicker = findViewById<NumberPicker>(R.id.Minutes)
         val hoursPicker = findViewById<NumberPicker>(R.id.Hours)
-        total = findViewById<TextView>(R.id.TimeTotal)
-        val current = findViewById<TextView>(R.id.TimeCurrent)
-        val start = findViewById<Button>(R.id.Start)
-        val stop = findViewById<Button>(R.id.Stop)
-        var timerTotal: CountDownTimer? = null
+        val total = findViewById<TextView>(R.id.TimeTotal)
+        val startButton = findViewById<Button>(R.id.Start)
+        val stopButton = findViewById<Button>(R.id.Stop)
 //        sms = SmsManager.getDefault()
 
         minutesPicker.setFormatter(fun(value: Int):String {
@@ -53,17 +48,34 @@ class MainActivity : AppCompatActivity() {
         hoursPicker.maxValue = 23
         hoursPicker.minValue = 0
 
-        start.setOnClickListener {
-            startAlarm()
-        }
+        startButton.setOnClickListener{
+            val targetTime = Calendar.getInstance()
+            targetTime.add(Calendar.HOUR, hoursPicker.value)
+            targetTime.add(Calendar.MINUTE, minutesPicker.value)
+            val sharedPref = this.getSharedPreferences(getString(R.string.pref), Context.MODE_PRIVATE)
+            sharedPref.edit().putLong(getString(R.string.pref_targetTime), targetTime.timeInMillis).apply()
 
+            val lastAlarmSet = Calendar.getInstance()
+            lastAlarmSet.timeInMillis = sharedPref.getLong(getString(R.string.pref_lastAlarmSet), 0)
+            lastAlarmSet.add(Calendar.MINUTE, this.resources.getInteger(R.integer.alarmInterval))
+
+            val nextAlarm = Calendar.getInstance()
+            if (nextAlarm.after(lastAlarmSet)) {
+                nextAlarm.add(Calendar.MINUTE, this.resources.getInteger(R.integer.alarmInterval))
+                Alarm().startAlarm(this, nextAlarm.timeInMillis, null)
+                sharedPref.edit().putLong(getString(R.string.pref_lastAlarmSet), nextAlarm.timeInMillis).apply()
+            }
+        }
+        stopButton.setOnClickListener {
+            stop()
+        }
     }
 
     fun redrawTime(millisUntilFinished: Long, textView: TextView) {
         textView.text = String.format("%02d:%02d:%02d", millisUntilFinished / 3600000 % 24, millisUntilFinished / 60000 % 60, millisUntilFinished / 1000 % 60)
     }
 
-    fun startAlarm(){
+    fun stop(){
 
     }
 }

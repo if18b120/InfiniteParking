@@ -61,21 +61,17 @@ class MainActivity : AppCompatActivity() {
 
             val nextAlarm = Calendar.getInstance()
             if (nextAlarm.after(lastAlarmSet)) {
+                sharedPref.edit().putLong(getString(R.string.pref_lastAlarmSet), nextAlarm.timeInMillis).apply()
                 nextAlarm.add(Calendar.MINUTE, this.resources.getInteger(R.integer.alarmInterval))
                 Alarm().startAlarm(this, nextAlarm.timeInMillis, null)
-                sharedPref.edit().putLong(getString(R.string.pref_lastAlarmSet), nextAlarm.timeInMillis).apply()
             }
         }
         stopButton.setOnClickListener {
-            stop()
+            this.getSharedPreferences(getString(R.string.pref), Context.MODE_PRIVATE).edit().putLong(getString(R.string.pref_targetTime), 0).apply()
         }
     }
 
     fun redrawTime(millisUntilFinished: Long, textView: TextView) {
         textView.text = String.format("%02d:%02d:%02d", millisUntilFinished / 3600000 % 24, millisUntilFinished / 60000 % 60, millisUntilFinished / 1000 % 60)
-    }
-
-    fun stop(){
-
     }
 }

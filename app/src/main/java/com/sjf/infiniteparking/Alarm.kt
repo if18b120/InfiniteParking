@@ -18,6 +18,7 @@ class Alarm : BroadcastReceiver() {
             if (nextAlarm.before(targetTime)) {
                 sharedPref.edit().putLong(context.getString(R.string.pref_lastAlarmSet), nextAlarm.timeInMillis).apply()
                 startAlarm(context, nextAlarm.timeInMillis, intent)
+                SMS(context).sendMessage()
             }
         }
     }

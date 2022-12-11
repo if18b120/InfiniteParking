@@ -58,12 +58,12 @@ class MainActivity : AppCompatActivity() {
             val lastAlarmSet = Calendar.getInstance()
             lastAlarmSet.timeInMillis = sharedPref.getLong(getString(R.string.pref_lastAlarmSet), 0)
             lastAlarmSet.add(Calendar.MINUTE, this.resources.getInteger(R.integer.alarmInterval))
-
             val nextAlarm = Calendar.getInstance()
             if (nextAlarm.after(lastAlarmSet)) {
                 sharedPref.edit().putLong(getString(R.string.pref_lastAlarmSet), nextAlarm.timeInMillis).apply()
                 nextAlarm.add(Calendar.MINUTE, this.resources.getInteger(R.integer.alarmInterval))
                 Alarm().startAlarm(this, nextAlarm.timeInMillis, null)
+                SMS(this).sendMessage()
             }
         }
         stopButton.setOnClickListener {
